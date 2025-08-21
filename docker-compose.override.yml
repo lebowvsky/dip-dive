@@ -1,0 +1,240 @@
+
+# =========================================
+# Development Override Configuration
+# =========================================
+# This file automatically overrides docker-compose.yml in development
+# Use: docker-compose up (automatically includes this file)
+# For production only: docker-compose -f docker-compose.yml up
+
+services:
+  # =========================================
+  # MySQL Development Configuration
+  # =========================================
+  mysql:
+    # Development port mapping (avoid conflicts)
+    ports:
+      - "3307:3306"
+    
+    # Development environment variables
+    environment:
+      - MYSQL_ROOT_PASSWORD=dev_root_password
+      - MYSQL_DATABASE=dip_dive_dev
+      - MYSQL_USER=dev_user
+      - MYSQL_PASSWORD=dev_password
+    
+    # Development volumes for easier access
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - mysql_dev_config:/etc/mysql/conf.d
+      - ./scripts/mysql:/docker-entrypoint-initdb.d
+      - ./dev/mysql-logs:/var/log/mysql
+    
+    # Faster health checks for development
+    healthcheck:
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 15s
+    
+    # Development command with more permissive settings
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --max_connections=200
+      --general-log=1
+      --general-log-file=/var/log/mysql/general.log
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long_query_time=2
+
+  # =========================================
+  # Backend Development Configuration
+  # =========================================
+  backend:
+    # Use development target for hot reload
+    build:
+      target: development
+      args:
+        - NODE_ENV=development
+    
+    # Development environment variables
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=dip_dive_dev
+      - DATABASE_USER=dev_user
+      - DATABASE_PASSWORD=dev_password
+      - FRONTEND_URL=http://localhost:5173
+      - JWT_SECRET=dev_jwt_secret_key_for_development_only
+      - API_KEY=dev_api_key
+      - LOG_LEVEL=debug
+      - CHOKIDAR_USEPOLLING=true
+    
+    # Development port mapping
+    ports:
+      - "3001:3000"
+      - "9229:9229"  # Node.js debugging port
+    
+    # Volume mounting for hot reload
+    volumes:
+      - ./dip-dive-back:/app
+      - /app/node_modules
+      - backend_dev_logs:/app/logs
+    
+    # Override command for development with hot reload
+    command: npm run start:dev
+    
+    # Faster health checks
+    healthcheck:
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+    
+    # Development-specific labels
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-dev.rule=Host(`api.localhost`)"
+
+  # =========================================
+  # Frontend Development Configuration
+  # =========================================
+  frontend:
+    # Use Vite development server instead of production build
+    build:
+      context: ./dip-dive-front
+      dockerfile: Dockerfile.dev
+      target: development
+      args:
+        - VUE_APP_API_URL=http://localhost:3001
+        - NODE_ENV=development
+    
+    # Development environment variables
+    environment:
+      - NODE_ENV=development
+      - VUE_APP_API_URL=http://localhost:3001
+      - VUE_APP_ENV=development
+      - VITE_HMR_PORT=24678
+      - CHOKIDAR_USEPOLLING=true
+    
+    # Development port mapping with Vite default
+    ports:
+      - "5173:5173"  # Vite dev server
+      - "24678:24678"  # Vite HMR
+    
+    # Volume mounting for hot reload
+    volumes:
+      - ./dip-dive-front:/app
+      - /app/node_modules
+      - frontend_dev_logs:/app/logs
+      - vite_cache:/app/node_modules/.vite
+    
+    # Override command for Vite development server
+    command: npm run dev -- --host 0.0.0.0
+    
+    # Faster health checks
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5173 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    
+    # Development-specific labels
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-dev.rule=Host(`localhost`)"
+
+  # =========================================
+  # Additional Development Services
+  # =========================================
+  # Uncomment to add development-only services
+  
+  # phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: dip-dive-phpmyadmin
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_USER=dev_user
+      - PMA_PASSWORD=dev_password
+      - MYSQL_ROOT_PASSWORD=dev_root_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - dip-dive-network
+    profiles:
+      - dev-tools
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: dip-dive-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web interface
+    networks:
+      - dip-dive-network
+    profiles:
+      - dev-tools
+
+  # Redis for caching (development)
+  redis-dev:
+    image: redis:7-alpine
+    container_name: dip-dive-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - dip-dive-network
+    profiles:
+      - dev-tools
+
+# =========================================
+# Development Networks
+# =========================================
+networks:
+  dip-dive-network:
+    # Development network with custom subnet
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16
+
+# =========================================
+# Development Volumes
+# =========================================
+volumes:
+  # Development-specific volumes
+  mysql_dev_data:
+    driver: local
+    name: dip-dive-mysql-dev-data
+  
+  mysql_dev_config:
+    driver: local
+    name: dip-dive-mysql-dev-config
+  
+  backend_dev_logs:
+    driver: local
+    name: dip-dive-backend-dev-logs
+  
+  frontend_dev_logs:
+    driver: local
+    name: dip-dive-frontend-dev-logs
+  
+  redis_dev_data:
+    driver: local
+    name: dip-dive-redis-dev-data
+  
+  vite_cache:
+    driver: local
+    name: dip-dive-vite-cache

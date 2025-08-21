@@ -1,0 +1,221 @@
+
+# ==================================
+# DIP-DIVE Stack - Production Ready
+# ==================================
+# Services: Frontend (Vue) + Backend (NestJS) + Database (MySQL)
+# Network: Isolated custom network for security
+# Volumes: Persistent data storage for MySQL
+
+services:
+  # ==================================
+  # MySQL Database Service
+  # ==================================
+  mysql:
+    image: mysql:8.0
+    container_name: dip-dive-mysql
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=UTC
+    
+    # Port mapping
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    
+    # Persistent volume for data
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_config:/etc/mysql/conf.d
+      - ./scripts/mysql:/docker-entrypoint-initdb.d
+    
+    # Network
+    networks:
+      - dip-dive-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ==================================
+  # Backend Service (NestJS)
+  # ==================================
+  backend:
+    build:
+      context: ./dip-dive-back
+      dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-production}
+      args:
+        - NODE_ENV=${NODE_ENV:-production}
+    
+    container_name: dip-dive-backend
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_NAME=${MYSQL_DATABASE}
+      - DATABASE_USER=${MYSQL_USER}
+      - DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - API_KEY=${API_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    
+    # Port mapping
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+    
+    # Volumes for development (commented for production)
+    # volumes:
+    #   - ./dip-dive-back:/app
+    #   - /app/node_modules
+    
+    # Dependencies
+    depends_on:
+      mysql:
+        condition: service_healthy
+    
+    # Network
+    networks:
+      - dip-dive-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ==================================
+  # Frontend Service (Vue + Nginx)
+  # ==================================
+  frontend:
+    build:
+      context: ./dip-dive-front
+      dockerfile: Dockerfile
+      target: production-stage
+      args:
+        - VUE_APP_API_URL=${VUE_APP_API_URL}
+        - NODE_ENV=${NODE_ENV:-production}
+    
+    container_name: dip-dive-frontend
+    restart: unless-stopped
+    
+    # Environment variables for build time
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - VUE_APP_API_URL=${VUE_APP_API_URL}
+    
+    # Port mapping
+    ports:
+      - "${FRONTEND_PORT:-3000}:8080"
+    
+    # Dependencies
+    depends_on:
+      backend:
+        condition: service_healthy
+    
+    # Network
+    networks:
+      - dip-dive-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ==================================
+# Networks Configuration
+# ==================================
+networks:
+  dip-dive-network:
+    driver: bridge
+    name: dip-dive-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/16
+
+# ==================================
+# Volumes Configuration
+# ==================================
+volumes:
+  # MySQL data persistence
+  mysql_data:
+    driver: local
+    name: dip-dive-mysql-data
+  
+  # MySQL configuration
+  mysql_config:
+    driver: local
+    name: dip-dive-mysql-config
+
+# ==================================
+# Additional Configuration
+# ==================================
+# Profiles for different environments
+# Use: docker-compose --profile dev up
+# Use: docker-compose --profile prod up

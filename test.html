@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple</title>
+</head>
+<body>
+    <h1>Test de connectivité</h1>
+    <p>Si vous voyez ceci, le serveur fonctionne !</p>
+    <script>
+        console.log('JavaScript fonctionne !');
+        fetch('http://localhost:3001')
+            .then(response => response.text())
+            .then(data => {
+                console.log('Backend response:', data);
+                document.body.innerHTML += '<p>Backend répond: ' + data + '</p>';
+            })
+            .catch(err => {
+                console.error('Erreur backend:', err);
+                document.body.innerHTML += '<p style="color:red">Erreur backend: ' + err + '</p>';
+            });
+    </script>
+</body>
+</html>
