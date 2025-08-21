@@ -1,0 +1,131 @@
+# ===========================================
+# .dockerignore - Optimisation du contexte
+# ===========================================
+
+# Fichiers et dossiers à exclure du contexte Docker
+
+# ===============================
+# Dépendances et modules
+# ===============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===============================
+# Build et distribution
+# ===============================
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# ===============================
+# Logs et runtime
+# ===============================
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ===============================
+# Variables d'environnement
+# ===============================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# ===============================
+# Git et contrôle de version
+# ===============================
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# ===============================
+# IDE et éditeurs
+# ===============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===============================
+# Docker
+# ===============================
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# ===============================
+# Tests et couverture
+# ===============================
+coverage/
+*.lcov
+test/
+*.spec.ts
+*.test.ts
+jest.config.js
+
+# ===============================
+# Documentation
+# ===============================
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+*.md
+
+# ===============================
+# Configuration ESLint/Prettier
+# ===============================
+.eslintrc.js
+.eslintignore
+.prettierrc
+.prettierignore
+
+# ===============================
+# Configuration TypeScript
+# ===============================
+tsconfig.json
+tsconfig.build.json
+
+# ===============================
+# Autres fichiers de config
+# ===============================
+.editorconfig
+.nvmrc
+.husky/
+.lint-staged.json
+
+# ===============================
+# Dossiers temporaires
+# ===============================
+tmp/
+temp/
+.tmp/
+.cache/
+
+# ===============================
+# Certificats et clés (sécurité)
+# ===============================
+*.pem
+*.key
+*.crt
+*.csr

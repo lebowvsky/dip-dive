@@ -1,0 +1,35 @@
+# Build outputs
+dist/
+build/
+*.min.css
+
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage reports
+coverage/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.nuxt/
+.output/
+.nitro/
+
+# Public assets
+public/
+
+# Temporary files
+*.tmp
+*.temp

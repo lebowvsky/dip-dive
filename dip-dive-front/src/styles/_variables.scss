@@ -1,0 +1,29 @@
+// spacing padding margin radius
+$xs: 4px;
+$s: 8px;
+$m: 12px;
+$l: 16px;
+$xl: 24px;
+$xxl: 48px;
+
+// font sizes
+$font-size-xs: 12px;
+$font-size-s: 14px;
+$font-size-m: 16px;
+$font-size-l: 18px;
+$font-size-xl: 24px;
+$font-size-xxl: 32px;
+
+// main content
+$main-padding-vertical: $s;
+$main-padding: $main-padding-vertical 0;
+
+// content
+$content-width: 1400px;
+
+// navbar
+$navbar-height: 80px;
+
+// sidebar nav
+$sidebar-width: 180px;
+$sidebar-height: calc(calc(100vh - #{$navbar-height}) - calc(2 * #{$main-padding-vertical}));

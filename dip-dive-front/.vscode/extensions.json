@@ -1,0 +1,28 @@
+{
+  "recommendations": [
+    // Vue development
+    "Vue.volar",
+    "Vue.vscode-typescript-vue-plugin",
+
+    // TypeScript
+    "ms-vscode.vscode-typescript-next",
+
+    // Linting and formatting
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+
+    // Git
+    "eamodio.gitlens",
+
+    // Utilities
+    "bradlc.vscode-tailwindcss",
+    "christian-kohler.path-intellisense",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.vscode-json"
+  ],
+  "unwantedRecommendations": [
+    "octref.vetur",
+    "ms-vscode.vscode-typescript-vue-plugin-pack"
+  ]
+}

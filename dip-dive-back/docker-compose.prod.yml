@@ -1,0 +1,111 @@
+# =============================================
+# Docker Compose - Environnement de production
+# =============================================
+
+version: '3.8'
+
+services:
+  # ===========================
+  # Application NestJS Production
+  # ===========================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: dip-dive-backend-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - .env.production
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dip-dive-network
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ===========================
+  # Base de données MySQL Production
+  # ===========================
+  mysql:
+    image: mysql:8.0
+    container_name: dip-dive-mysql-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: dip_dive_prod
+      MYSQL_USER: nestjs
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    networks:
+      - dip-dive-network
+    secrets:
+      - mysql_root_password
+      - mysql_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ===========================
+  # Redis Production
+  # ===========================
+  redis:
+    image: redis:7-alpine
+    container_name: dip-dive-redis-prod
+    restart: always
+    volumes:
+      - redis_prod_data:/data
+    networks:
+      - dip-dive-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+# ===========================
+# Secrets pour la production
+# ===========================
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
+  mysql_password:
+    file: ./secrets/mysql_password.txt
+
+# ===========================
+# Volumes persistants
+# ===========================
+volumes:
+  mysql_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+
+# ===========================
+# Réseau isolé
+# ===========================
+networks:
+  dip-dive-network:
+    driver: bridge

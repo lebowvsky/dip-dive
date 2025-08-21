@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Generated files
+schema.gql
+*.d.ts
+
+# Config files that should not be formatted
+.eslintrc.js
+.prettierrc
+*.config.js
+*.config.mjs
+
+# Documentation (if you want to exclude)
+# README.md
+# CHANGELOG.md
+
+# Test coverage
+coverage/
+*.lcov

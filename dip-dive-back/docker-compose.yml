@@ -1,0 +1,120 @@
+# =============================================
+# Docker Compose - Environnement de développement
+# =============================================
+
+version: '3.8'
+
+services:
+  # ===========================
+  # Application NestJS
+  # ===========================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: dip-dive-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=nestjs
+      - DB_PASSWORD=nestjs_password
+      - DB_DATABASE=dip_dive_dev
+      - JWT_SECRET=development_jwt_secret_change_in_production
+    volumes:
+      # Hot reload - mount du code source
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dip-dive-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ===========================
+  # Base de données MySQL
+  # ===========================
+  mysql:
+    image: mysql:8.0
+    container_name: dip-dive-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: dip_dive_dev
+      MYSQL_USER: nestjs
+      MYSQL_PASSWORD: nestjs_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - dip-dive-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ===========================
+  # Redis pour le cache
+  # ===========================
+  redis:
+    image: redis:7-alpine
+    container_name: dip-dive-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dip-dive-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ===========================
+  # Adminer pour l'administration DB
+  # ===========================
+  adminer:
+    image: adminer:latest
+    container_name: dip-dive-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - dip-dive-network
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+
+# ===========================
+# Volumes persistants
+# ===========================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ===========================
+# Réseau isolé
+# ===========================
+networks:
+  dip-dive-network:
+    driver: bridge

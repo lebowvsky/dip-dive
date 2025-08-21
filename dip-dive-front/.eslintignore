@@ -1,0 +1,48 @@
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+
+# Cache directories
+.cache/
+.parcel-cache/
+.nuxt/
+.output/
+.nitro/
+
+# Public assets
+public/
+
+# TypeScript declaration files (generated)
+**/*.d.ts
+
+# Vite specific
+vite.config.ts.timestamp-*
