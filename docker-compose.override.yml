@@ -153,9 +153,9 @@ services:
   # =========================================
   # Uncomment to add development-only services
   
-  # phpMyAdmin for database management
+  # phpMyAdmin for database management (available by default in dev)
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin/phpmyadmin:5.2
     container_name: dip-dive-phpmyadmin
     restart: unless-stopped
     environment:
@@ -163,15 +163,29 @@ services:
       - PMA_PORT=3306
       - PMA_USER=dev_user
       - PMA_PASSWORD=dev_password
-      - MYSQL_ROOT_PASSWORD=dev_root_password
+      - PMA_ROOT_PASSWORD=dev_root_password
+      - PMA_ARBITRARY=1
+      - PMA_ABSOLUTE_URI=http://localhost:8080/
+      - UPLOAD_LIMIT=1G
+      - MEMORY_LIMIT=512M
     ports:
       - "8080:80"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - dip-dive-network
-    profiles:
-      - dev-tools
+    volumes:
+      - phpmyadmin_config:/etc/phpmyadmin/conf.d
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin-dev.rule=Host(`pma.localhost`)"
 
   # Mailhog for email testing
   mailhog:
@@ -238,3 +252,7 @@ volumes:
   vite_cache:
     driver: local
     name: dip-dive-vite-cache
+  
+  phpmyadmin_config:
+    driver: local
+    name: dip-dive-phpmyadmin-config

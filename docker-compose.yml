@@ -187,6 +187,71 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ==================================
+  # phpMyAdmin (Production - Optional)
+  # ==================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.2
+    container_name: dip-dive-phpmyadmin-prod
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_USER=${MYSQL_USER}
+      - PMA_PASSWORD=${MYSQL_PASSWORD}
+      - PMA_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - PMA_ARBITRARY=1
+      - UPLOAD_LIMIT=500M
+      - MEMORY_LIMIT=256M
+    
+    # Port mapping - Disabled by default for security in production
+    # Uncomment to enable: 
+    # ports:
+    #   - "8080:80"
+    
+    # Dependencies
+    depends_on:
+      mysql:
+        condition: service_healthy
+    
+    # Network
+    networks:
+      - dip-dive-network
+    
+    # Persistent configuration
+    volumes:
+      - phpmyadmin_prod_config:/etc/phpmyadmin/conf.d
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Production profile - Use: docker-compose --profile admin-tools up
+    profiles:
+      - admin-tools
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+
 # ==================================
 # Networks Configuration
 # ==================================
@@ -213,9 +278,14 @@ volumes:
     driver: local
     name: dip-dive-mysql-config
 
+  # phpMyAdmin configuration
+  phpmyadmin_prod_config:
+    driver: local
+    name: dip-dive-phpmyadmin-prod-config
+
 # ==================================
 # Additional Configuration
 # ==================================
 # Profiles for different environments
-# Use: docker-compose --profile dev up
+# Use: docker-compose --profile admin-tools up (with phpMyAdmin)
 # Use: docker-compose --profile prod up

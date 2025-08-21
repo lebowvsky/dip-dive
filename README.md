@@ -50,13 +50,15 @@ docker compose -f docker-compose.yml up --build
 - 🌐 **Frontend**: http://localhost:5173 (Vite dev server with hot reload)
 - 🔧 **Backend API**: http://localhost:3001
 - 🗄️ **Database**: localhost:3307
-- 📊 **phpMyAdmin**: http://localhost:8080 (with dev-tools profile)
+- 📊 **phpMyAdmin**: http://localhost:8080 (available by default in dev mode)
 - 📧 **Mailhog**: http://localhost:8025 (with dev-tools profile)
+- ⚡ **Redis**: localhost:6379 (with dev-tools profile)
 
 #### Production URLs
 - 🌐 **Frontend**: http://localhost:3000
 - 🔧 **Backend API**: http://localhost:3001
 - 🗄️ **Database**: localhost:3306
+- 📊 **phpMyAdmin**: http://localhost:8080 (with --profile admin-tools)
 
 ## 📁 Project Structure
 
@@ -85,6 +87,24 @@ In development mode, both frontend and backend support hot reload:
 - **Backend**: NestJS watch mode with Nodemon
 
 ### Database Management
+
+#### phpMyAdmin (Recommended)
+```bash
+# In development mode (available by default)
+./scripts/start.sh dev
+# Then access: http://localhost:8080
+
+# In production (with admin tools profile)  
+docker compose --profile admin-tools up -d
+# Then access: http://localhost:8080
+
+# Login credentials:
+# Server: mysql
+# Username: dev_user (dev) / your MYSQL_USER (prod)
+# Password: dev_password (dev) / your MYSQL_PASSWORD (prod)
+```
+
+#### MySQL Command Line
 ```bash
 # Access MySQL shell
 docker compose exec mysql mysql -u root -p
@@ -92,8 +112,8 @@ docker compose exec mysql mysql -u root -p
 # View database logs
 docker compose logs mysql -f
 
-# Access phpMyAdmin (dev mode)
-docker compose --profile dev-tools up -d
+# Connect from host (development)
+mysql -h localhost -P 3307 -u dev_user -pdev_password dip_dive_dev
 ```
 
 ### Debugging
