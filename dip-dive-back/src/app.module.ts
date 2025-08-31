@@ -10,6 +10,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { UserRolesModule } from './user-roles/user-roles.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { getDatabaseConfig } from './config/database.config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,11 +21,12 @@ import { getDatabaseConfig } from './config/database.config';
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService),
       inject: [ConfigService],
     }),
-    UsersModule, 
-    RolesModule, 
-    PermissionsModule, 
-    UserRolesModule, 
-    RolePermissionsModule
+    AuthModule,
+    UsersModule,
+    RolesModule,
+    PermissionsModule,
+    UserRolesModule,
+    RolePermissionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

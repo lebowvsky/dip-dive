@@ -63,7 +63,8 @@ export class User {
   @IsString()
   @MinLength(60, { message: 'Password hash is invalid' }) // bcrypt hash length
   @MaxLength(255, { message: 'Password hash is invalid' })
-  @Exclude({ toPlainOnly: true }) // Never expose password hash in API responses
+  // @Exclude({ toPlainOnly: true }) // Never expose password hash in API responses
+  @Exclude()
   passwordHash: string;
 
   @Column({ name: 'diving_license_number', length: 20, nullable: true })
@@ -120,9 +121,7 @@ export class User {
    */
   async hasRole(roleName: string): Promise<boolean> {
     const userRoles = await this.userRoles;
-    return userRoles.some(
-      (userRole) => userRole.role?.name === roleName && userRole.isActive,
-    );
+    return userRoles.some((userRole) => userRole.role?.name === roleName && userRole.isActive);
   }
 
   /**
@@ -130,10 +129,7 @@ export class User {
    */
   async hasRoleInCategory(category: string): Promise<boolean> {
     const userRoles = await this.userRoles;
-    return userRoles.some(
-      (userRole) =>
-        userRole.role?.category === category && userRole.isActive,
-    );
+    return userRoles.some((userRole) => userRole.role?.category === category && userRole.isActive);
   }
 
   /**
