@@ -12,10 +12,12 @@ Complete Docker Compose setup for DIP-DIVE application with Vue.js frontend, Nes
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Docker & Docker Compose
 - Node.js 18+ (for local development)
 
 ### 1. Environment Setup
+
 ```bash
 # Copy environment template
 cp .env.example .env
@@ -27,6 +29,7 @@ nano .env
 ### 2. Start the Stack
 
 #### Development Mode (Recommended)
+
 ```bash
 # Using startup script (recommended)
 ./scripts/start.sh dev --build
@@ -36,6 +39,7 @@ docker compose up --build
 ```
 
 #### Production Mode
+
 ```bash
 # Using startup script
 ./scripts/start.sh prod --build
@@ -47,6 +51,7 @@ docker compose -f docker-compose.yml up --build
 ### 3. Access Services
 
 #### Development URLs
+
 - 🌐 **Frontend**: http://localhost:5173 (Vite dev server with hot reload)
 - 🔧 **Backend API**: http://localhost:3001
 - 🗄️ **Database**: localhost:3307
@@ -55,6 +60,7 @@ docker compose -f docker-compose.yml up --build
 - ⚡ **Redis**: localhost:6379 (with dev-tools profile)
 
 #### Production URLs
+
 - 🌐 **Frontend**: http://localhost:3000
 - 🔧 **Backend API**: http://localhost:3001
 - 🗄️ **Database**: localhost:3306
@@ -82,19 +88,22 @@ dip-dive/
 ## 🛠️ Development
 
 ### Hot Reload & File Watching
+
 In development mode, both frontend and backend support hot reload:
+
 - **Frontend**: Vite dev server with HMR
 - **Backend**: NestJS watch mode with Nodemon
 
 ### Database Management
 
 #### phpMyAdmin (Recommended)
+
 ```bash
 # In development mode (available by default)
 ./scripts/start.sh dev
 # Then access: http://localhost:8080
 
-# In production (with admin tools profile)  
+# In production (with admin tools profile)
 docker compose --profile admin-tools up -d
 # Then access: http://localhost:8080
 
@@ -105,6 +114,7 @@ docker compose --profile admin-tools up -d
 ```
 
 #### MySQL Command Line
+
 ```bash
 # Access MySQL shell
 docker compose exec mysql mysql -u root -p
@@ -117,6 +127,7 @@ mysql -h localhost -P 3307 -u dev_user -pdev_password dip_dive_dev
 ```
 
 ### Debugging
+
 ```bash
 # View logs for all services
 docker compose logs -f
@@ -132,6 +143,7 @@ docker compose exec frontend sh
 ## 📊 Environment Profiles
 
 ### Development Profile
+
 - Hot reload enabled
 - Source code mounted as volumes
 - Debug ports exposed
@@ -139,6 +151,7 @@ docker compose exec frontend sh
 - Additional dev tools (phpMyAdmin, Mailhog)
 
 ### Production Profile
+
 - Optimized builds
 - No source code mounting
 - Health checks enabled
@@ -146,6 +159,7 @@ docker compose exec frontend sh
 - SSL/TLS ready
 
 ### Dev Tools Profile
+
 ```bash
 # Start with development tools
 docker compose --profile dev-tools up -d
@@ -159,6 +173,7 @@ docker compose --profile dev-tools up -d
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Key variables in `.env`:
 
 ```bash
@@ -175,6 +190,7 @@ MYSQL_PASSWORD=app_password
 
 # Security
 JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=3600
 API_KEY=your_api_key
 
 # URLs
@@ -183,9 +199,11 @@ VUE_APP_API_URL=http://localhost:3001
 ```
 
 ### Custom Networks
+
 All services run on isolated `dip-dive-network` for security.
 
 ### Persistent Data
+
 - MySQL data: `mysql_data` volume
 - Development MySQL: `mysql_dev_data` volume
 
@@ -225,11 +243,13 @@ docker compose exec mysql mysql -u root -p
 ## 📦 Volumes & Data
 
 ### Persistent Volumes
+
 - `mysql_data`: Production MySQL data
 - `mysql_dev_data`: Development MySQL data
 - `mysql_config`: MySQL configuration files
 
 ### Backup & Restore
+
 ```bash
 # Backup database
 docker compose exec mysql mysqldump -u root -p dip_dive_db > backup.sql
@@ -244,6 +264,7 @@ docker compose exec -T mysql mysql -u root -p dip_dive_db < backup.sql
 ## 🔒 Security
 
 ### Production Security Features
+
 - Non-root users in containers
 - Resource limits and health checks
 - Isolated network communication
@@ -251,6 +272,7 @@ docker compose exec -T mysql mysql -u root -p dip_dive_db < backup.sql
 - SSL/TLS ready configuration
 
 ### Security Best Practices
+
 - Never commit `.env` files
 - Use strong passwords in production
 - Enable SSL certificates for public deployment
@@ -260,6 +282,7 @@ docker compose exec -T mysql mysql -u root -p dip_dive_db < backup.sql
 ## 🚀 Deployment
 
 ### Production Deployment
+
 1. Set production environment variables
 2. Configure SSL certificates (optional)
 3. Set resource limits
@@ -272,7 +295,9 @@ docker compose -f docker-compose.yml up -d --build
 ```
 
 ### Cloud Deployment
+
 The stack is ready for cloud deployment on:
+
 - AWS ECS/Fargate
 - Google Cloud Run
 - Azure Container Instances
@@ -295,13 +320,17 @@ docker compose exec backend npm run test:e2e
 ## 📈 Monitoring
 
 ### Health Checks
+
 All services include health checks:
+
 - **Frontend**: HTTP check on port 8080/5173
 - **Backend**: API health endpoint
 - **MySQL**: mysqladmin ping
 
 ### Logging
+
 Centralized logging configuration with rotation:
+
 - Log rotation: 10MB max, 3 files
 - JSON format for structured logging
 
@@ -310,40 +339,45 @@ Centralized logging configuration with rotation:
 ### Common Issues
 
 1. **Port conflicts**
+
    ```bash
    # Check what's using the port
    lsof -i :3000
-   
+
    # Change port in .env file
    FRONTEND_PORT=3001
    ```
 
 2. **Permission errors**
+
    ```bash
    # Fix file permissions
    sudo chown -R $USER:$USER .
    ```
 
 3. **Database connection issues**
+
    ```bash
    # Check database health
    docker compose exec mysql mysqladmin ping -h localhost -u root -p
-   
+
    # Restart database
    docker compose restart mysql
    ```
 
 4. **Build failures**
+
    ```bash
    # Clean build cache
    docker compose build --no-cache
-   
+
    # Remove all and rebuild
    docker compose down
    docker compose up --build
    ```
 
 ### Reset Everything
+
 ```bash
 # Nuclear option - removes everything
 ./scripts/stop.sh --remove-volumes --remove-images

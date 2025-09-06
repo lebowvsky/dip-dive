@@ -7,6 +7,7 @@ Cette configuration Docker multi-stage optimise les performances, la sécurité 
 ## 🏗️ Architecture Multi-Stage
 
 ### Stages disponibles :
+
 - **`base`** : Configuration commune et utilisateur non-root
 - **`dependencies`** : Installation optimisée des dépendances
 - **`development`** : Environnement de développement avec hot-reload
@@ -95,6 +96,7 @@ docker-compose -f docker-compose.prod.yml up -d --force-recreate
 ## 🔧 Variables d'Environnement Essentielles
 
 ### Développement
+
 ```bash
 NODE_ENV=development
 PORT=3000
@@ -104,9 +106,11 @@ DB_USERNAME=nestjs
 DB_PASSWORD=nestjs_password
 DB_DATABASE=dip_dive_dev
 JWT_SECRET=development_jwt_secret
+JWT_EXPIRES_IN=3600
 ```
 
 ### Production
+
 ```bash
 NODE_ENV=production
 PORT=3000
@@ -116,12 +120,14 @@ DB_USERNAME=your_db_user
 DB_PASSWORD=your_secure_password
 DB_DATABASE=dip_dive_prod
 JWT_SECRET=your_super_secure_jwt_secret
+JWT_EXPIRES_IN=3600
 CORS_ORIGIN=https://yourdomain.com
 ```
 
 ## 📊 Optimisations Implémentées
 
 ### Performance
+
 - ✅ Build multi-stage pour réduire la taille finale
 - ✅ Cache des layers Docker optimisé
 - ✅ Copy des `package*.json` avant le code source
@@ -129,6 +135,7 @@ CORS_ORIGIN=https://yourdomain.com
 - ✅ Suppression des caches npm après installation
 
 ### Sécurité
+
 - ✅ Utilisateur non-root (`nestjs:nodejs`)
 - ✅ Dumb-init pour la gestion des processus
 - ✅ Healthcheck automatique
@@ -136,6 +143,7 @@ CORS_ORIGIN=https://yourdomain.com
 - ✅ Variables d'environnement sécurisées
 
 ### Développement
+
 - ✅ Hot-reload avec volumes montés
 - ✅ MySQL et Redis préconfigurés
 - ✅ Adminer pour l'administration DB
@@ -144,6 +152,7 @@ CORS_ORIGIN=https://yourdomain.com
 ## 🩺 Healthcheck et Monitoring
 
 Le script `healthcheck.js` vérifie :
+
 - Disponibilité de l'endpoint `/health`
 - Temps de réponse sous 3 secondes
 - Code de statut HTTP valide
@@ -174,6 +183,7 @@ docker inspect --format='{{.State.Health.Status}}' dip-dive-backend
 ## 🔍 Débogage
 
 ### Logs et Monitoring
+
 ```bash
 # Logs de l'application
 docker-compose logs -f app
@@ -189,6 +199,7 @@ docker inspect dip-dive-backend
 ```
 
 ### Performance
+
 ```bash
 # Statistiques d'utilisation
 docker stats dip-dive-backend
@@ -203,6 +214,7 @@ docker history dip-dive-backend:prod
 ## 🚨 Sécurité en Production
 
 ### Checklist avant déploiement :
+
 - [ ] Variables d'environnement sécurisées
 - [ ] Secrets Docker configurés
 - [ ] Certificats SSL/TLS valides
@@ -212,6 +224,7 @@ docker history dip-dive-backend:prod
 - [ ] Limite des ressources définies
 
 ### Commandes de sécurité :
+
 ```bash
 # Scan de vulnérabilités
 docker scan dip-dive-backend:prod

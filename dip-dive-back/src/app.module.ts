@@ -11,10 +11,13 @@ import { UserRolesModule } from './user-roles/user-roles.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { getDatabaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
+import { configValidationSchema } from './config/config.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: [`.env.${process.env.STAGE}`],
+      validationSchema: configValidationSchema,
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
